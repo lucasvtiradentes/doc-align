@@ -12,7 +12,8 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -e ".[dev]"
-      - run: align-md-docs --check tests/fixtures/**/expected.md
+      - run: shopt -s globstar && align-md-docs --check tests/fixtures/**/expected.md
+        shell: bash
 
   test:
     runs-on: ubuntu-latest
