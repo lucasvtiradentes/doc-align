@@ -1,3 +1,5 @@
+import difflib
+import glob as globmod
 import os
 import sys
 from importlib.metadata import version as pkg_version
@@ -40,17 +42,31 @@ Checks and fixes:
   6. Box walls       - verifies nested box right walls match their opening/closing borders
 
 Usage:
-  align-md-docs <path>               # auto-fix file or all .md in folder
-  align-md-docs --check <path>       # detect-only, no writes
+  align-md-docs <path>               # check-only (default)
+  align-md-docs --fix <path>         # auto-fix files in place
+  align-md-docs --diff <path>        # show unified diff of changes
   align-md-docs --help               # show this help
   align-md-docs --version            # show version
 
+Paths can be files, directories, or glob patterns (e.g. "docs/**/*.md").
+
 Exit codes:
   0 - all docs aligned (or all issues auto-fixed)
-  1 - unfixable issues remain (fix mode) or errors found (check mode)""")
+  1 - errors found (check mode), unfixable issues remain (fix mode), or diff non-empty (diff mode)""")
+
+
+_GLOB_CHARS = set("*?[")
 
 
 def _collect_files(path):
+    if any(c in path for c in _GLOB_CHARS):
+        matches = globmod.glob(path, recursive=True)
+        files = sorted(f for f in matches if f.endswith(".md") and os.path.isfile(f))
+        if not files:
+            print(f"error: no .md files matched pattern '{path}'")
+            sys.exit(1)
+        return files
+
     path = os.path.abspath(path)
     if os.path.isfile(path):
         return [path]
@@ -74,8 +90,9 @@ def main():
         print(pkg_version("align-md-docs"))
         sys.exit(0)
 
-    check_only = "--check" in sys.argv
-    args = [a for a in sys.argv[1:] if a.startswith("-") is False]
+    fix_mode = "--fix" in sys.argv
+    diff_mode = "--diff" in sys.argv
+    args = [a for a in sys.argv[1:] if not a.startswith("-")]
 
     if len(args) == 0:
         print_help()
@@ -87,6 +104,7 @@ def main():
 
     total_errors = 0
     total_fixed = 0
+    has_diff = False
 
     for fpath in sorted(files):
         with open(fpath) as f:
@@ -95,38 +113,46 @@ def main():
         rel = os.path.relpath(fpath)
         errs = run_checks(lines)
 
-        if errs:
-            if check_only:
-                print(f"\n{rel}:")
-                for e in errs:
+        if not errs:
+            continue
+
+        if diff_mode:
+            fixed_lines = run_fixes(lines)
+            diff = difflib.unified_diff(lines, fixed_lines, fromfile=rel, tofile=rel)
+            diff_text = "".join(diff)
+            if diff_text:
+                print(diff_text, end="" if diff_text.endswith("\n") else "\n")
+                has_diff = True
+        elif fix_mode:
+            fixed_lines = run_fixes(lines)
+            with open(fpath, "w") as f:
+                f.writelines(fixed_lines)
+
+            with open(fpath) as f:
+                recheck_lines = f.readlines()
+            remaining = run_checks(recheck_lines)
+
+            fixed_count = len(errs) - len(remaining)
+            if fixed_count > 0:
+                print(f"{rel}: fixed {fixed_count} issue(s)")
+                total_fixed += fixed_count
+            if remaining:
+                print(f"\n{rel}: {len(remaining)} unfixable issue(s):")
+                for e in remaining:
                     print(f"  {e}")
-                total_errors += len(errs)
-            else:
-                fixed_lines = run_fixes(lines)
-                with open(fpath, "w") as f:
-                    f.writelines(fixed_lines)
-
-                with open(fpath) as f:
-                    recheck_lines = f.readlines()
-                remaining = run_checks(recheck_lines)
-
-                fixed_count = len(errs) - len(remaining)
-                if fixed_count > 0:
-                    print(f"{rel}: fixed {fixed_count} issue(s)")
-                    total_fixed += fixed_count
-                if remaining:
-                    print(f"\n{rel}: {len(remaining)} unfixable issue(s):")
-                    for e in remaining:
-                        print(f"  {e}")
-                    total_errors += len(remaining)
-
-    if check_only:
-        if total_errors == 0:
-            print("ALL DOCS ALIGNED - no errors found")
+                total_errors += len(remaining)
         else:
-            print(f"\n{total_errors} error(s) found")
+            print(f"\n{rel}:")
+            for e in errs:
+                print(f"  {e}")
+            total_errors += len(errs)
+
+    if diff_mode:
+        if has_diff:
             sys.exit(1)
-    else:
+        else:
+            print("ALL DOCS ALIGNED - no diff")
+    elif fix_mode:
         if total_fixed > 0:
             print(f"\n{total_fixed} issue(s) auto-fixed")
         if total_errors > 0:
@@ -134,3 +160,9 @@ def main():
             sys.exit(1)
         elif total_fixed == 0:
             print("ALL DOCS ALIGNED - no errors found")
+    else:
+        if total_errors == 0:
+            print("ALL DOCS ALIGNED - no errors found")
+        else:
+            print(f"\n{total_errors} error(s) found")
+            sys.exit(1)

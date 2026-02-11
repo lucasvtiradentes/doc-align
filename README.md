@@ -22,17 +22,22 @@ pip install -e ".[dev]"
 ## Usage
 
 ```bash
-# auto-fix file or all .md files in folder
-align-md-docs <file_or_folder>
+# check-only (default) - detect issues, no writes
+align-md-docs <path>
 
-# detect-only mode (no writes)
-align-md-docs --check <file_or_folder>
+# auto-fix files in place
+align-md-docs --fix <path>
+
+# show unified diff of what would change
+align-md-docs --diff <path>
 ```
+
+Paths can be files, directories, or glob patterns (e.g. `"docs/**/*.md"`).
 
 ## Exit codes
 
 - 0 - all docs aligned (or all issues auto-fixed)
-- 1 - unfixable issues remain (fix mode) or errors found (check mode)
+- 1 - errors found (check mode), unfixable issues remain (fix mode), or diff non-empty (diff mode)
 
 ## Tests
 
