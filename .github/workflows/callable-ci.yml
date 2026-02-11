@@ -15,6 +15,16 @@ jobs:
       - run: ruff check .
       - run: ruff format --check .
 
+  practical-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - run: align-md-docs --check docs/
+
   test:
     runs-on: ubuntu-latest
     strategy:
