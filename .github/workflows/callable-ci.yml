@@ -12,7 +12,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -e ".[dev]"
-      - run: align-md-docs --check tests/fixtures/
+      - run: align-md-docs --check tests/fixtures/**/expected.md
 
   test:
     runs-on: ubuntu-latest
