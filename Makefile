@@ -6,4 +6,5 @@ test:
 	.venv/bin/pytest -v
 
 check:
-	@find tests/fixtures -name 'expected.md' -exec .venv/bin/align-md-docs --check {} +
+	.venv/bin/ruff check .
+	.venv/bin/ruff format --check .

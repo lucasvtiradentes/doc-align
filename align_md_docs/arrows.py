@@ -1,83 +1,79 @@
-from align_md_docs.utils import ARROW_CHARS, BOX_CHARS, _is_standalone_arrow
 from align_md_docs.parser import iter_code_blocks
+from align_md_docs.utils import ARROW_CHARS, BOX_CHARS, _is_standalone_arrow
 
 
 def check(lines):
-  errors = []
-  for _, code_lines in iter_code_blocks(lines):
-    errors.extend(_check_arrows(code_lines))
-  return errors
+    errors = []
+    for _, code_lines in iter_code_blocks(lines):
+        errors.extend(_check_arrows(code_lines))
+    return errors
 
 
 def fix(lines):
-  result = list(lines)
-  for code_indices, _ in iter_code_blocks(lines):
-    _fix_arrows_in_block(code_indices, result)
-  return result
+    result = list(lines)
+    for code_indices, _ in iter_code_blocks(lines):
+        _fix_arrows_in_block(code_indices, result)
+    return result
 
 
 def _check_arrows(code_lines):
-  errors = []
-  for idx, (i, raw) in enumerate(code_lines):
-    for j, c in enumerate(raw):
-      if c not in ARROW_CHARS or not _is_standalone_arrow(raw, j):
-        continue
-      expected = _find_arrow_target(code_lines, idx, j, c)
-      if expected is not None and expected != j:
-        errors.append(
-          f"L{i+1} arrow '{c}' at col {j}, "
-          f"expected col {expected}"
-        )
-  return errors
+    errors = []
+    for idx, (i, raw) in enumerate(code_lines):
+        for j, c in enumerate(raw):
+            if c not in ARROW_CHARS or not _is_standalone_arrow(raw, j):
+                continue
+            expected = _find_arrow_target(code_lines, idx, j, c)
+            if expected is not None and expected != j:
+                errors.append(f"L{i + 1} arrow '{c}' at col {j}, expected col {expected}")
+    return errors
 
 
 def _find_arrow_target(code_lines, arrow_idx, arrow_col, arrow_char):
-  search_range = range(arrow_idx - 1, -1, -1) if arrow_char == 'v' else range(arrow_idx + 1, len(code_lines))
-  for si in search_range:
-    _, sraw = code_lines[si]
-    for dc in [0, -1, 1, -2, 2]:
-      col = arrow_col + dc
-      if 0 <= col < len(sraw) and sraw[col] in BOX_CHARS:
-        return col if dc != 0 else None
-    break
-  return None
+    search_range = range(arrow_idx - 1, -1, -1) if arrow_char == "v" else range(arrow_idx + 1, len(code_lines))
+    for si in search_range:
+        _, sraw = code_lines[si]
+        for dc in [0, -1, 1, -2, 2]:
+            col = arrow_col + dc
+            if 0 <= col < len(sraw) and sraw[col] in BOX_CHARS:
+                return col if dc != 0 else None
+        break
+    return None
 
 
 def _fix_arrows_in_block(code_indices, all_lines):
-  code_lines = [(i, all_lines[i].rstrip('\n')) for i in code_indices]
-  for idx, (i, raw) in enumerate(code_lines):
-    arrows = [(j, c) for j, c in enumerate(raw)
-              if c in ARROW_CHARS and _is_standalone_arrow(raw, j)]
-    if not arrows:
-      continue
-    corrections = []
-    for j, c in arrows:
-      expected = _find_arrow_target(code_lines, idx, j, c)
-      if expected is not None and expected != j:
-        corrections.append((j, expected))
-    if not corrections:
-      continue
-    new_raw = raw
-    for j, expected in sorted(corrections, key=lambda x: -x[0]):
-      delta = expected - j
-      if delta > 0:
-        spaces_after = 0
-        for k in range(j + 1, len(new_raw)):
-          if new_raw[k] == ' ':
-            spaces_after += 1
-          else:
-            break
-        if spaces_after >= delta:
-          new_raw = new_raw[:j] + ' ' * delta + new_raw[j] + new_raw[j + 1 + delta:]
-      elif delta < 0:
-        remove = abs(delta)
-        spaces_before = 0
-        for k in range(j - 1, -1, -1):
-          if new_raw[k] == ' ':
-            spaces_before += 1
-          else:
-            break
-        if spaces_before >= remove:
-          new_raw = new_raw[:j - remove] + new_raw[j] + ' ' * remove + new_raw[j + 1:]
-    if new_raw != raw:
-      all_lines[i] = new_raw + '\n'
+    code_lines = [(i, all_lines[i].rstrip("\n")) for i in code_indices]
+    for idx, (i, raw) in enumerate(code_lines):
+        arrows = [(j, c) for j, c in enumerate(raw) if c in ARROW_CHARS and _is_standalone_arrow(raw, j)]
+        if not arrows:
+            continue
+        corrections = []
+        for j, c in arrows:
+            expected = _find_arrow_target(code_lines, idx, j, c)
+            if expected is not None and expected != j:
+                corrections.append((j, expected))
+        if not corrections:
+            continue
+        new_raw = raw
+        for j, expected in sorted(corrections, key=lambda x: -x[0]):
+            delta = expected - j
+            if delta > 0:
+                spaces_after = 0
+                for k in range(j + 1, len(new_raw)):
+                    if new_raw[k] == " ":
+                        spaces_after += 1
+                    else:
+                        break
+                if spaces_after >= delta:
+                    new_raw = new_raw[:j] + " " * delta + new_raw[j] + new_raw[j + 1 + delta :]
+            elif delta < 0:
+                remove = abs(delta)
+                spaces_before = 0
+                for k in range(j - 1, -1, -1):
+                    if new_raw[k] == " ":
+                        spaces_before += 1
+                    else:
+                        break
+                if spaces_before >= remove:
+                    new_raw = new_raw[: j - remove] + new_raw[j] + " " * remove + new_raw[j + 1 :]
+        if new_raw != raw:
+            all_lines[i] = new_raw + "\n"

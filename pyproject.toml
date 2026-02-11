@@ -9,10 +9,16 @@ description = "Auto-fix alignment in markdown docs"
 requires-python = ">=3.9"
 
 [project.optional-dependencies]
-dev = ["pytest>=7"]
+dev = ["pytest>=7", "ruff>=0.9"]
 
 [project.scripts]
 align-md-docs = "align_md_docs.cli:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]

@@ -12,7 +12,8 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -e ".[dev]"
-      - run: find tests/fixtures -name 'expected.md' -exec align-md-docs --check {} +
+      - run: ruff check .
+      - run: ruff format --check .
 
   test:
     runs-on: ubuntu-latest
