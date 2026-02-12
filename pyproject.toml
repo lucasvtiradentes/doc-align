@@ -9,7 +9,7 @@ description = "Auto-fix alignment in markdown docs"
 requires-python = ">=3.9"
 
 [project.optional-dependencies]
-dev = ["pytest>=7", "ruff>=0.9"]
+dev = ["pytest>=7", "ruff>=0.9", "towncrier>=23", "bump2version>=1"]
 
 [project.scripts]
 mdalign = "mdalign.cli:main"
@@ -25,3 +25,23 @@ line-length = 120
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
+
+[tool.towncrier]
+directory = ".changelog"
+filename = "CHANGELOG.md"
+title_format = "## {version} ({project_date})"
+
+[[tool.towncrier.type]]
+directory = "feature"
+name = "Features"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "bugfix"
+name = "Bug Fixes"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "misc"
+name = "Misc"
+showcontent = true
