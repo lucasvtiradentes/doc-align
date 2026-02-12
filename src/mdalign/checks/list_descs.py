@@ -2,15 +2,15 @@ import re
 
 
 def _parse_line(raw):
-    prefix_match = re.match(r'^(\s*- )', raw)
+    prefix_match = re.match(r"^(\s*- )", raw)
     if not prefix_match:
         return None
-    after_prefix = raw[prefix_match.end():]
-    sep_idx = after_prefix.find(' - ')
+    after_prefix = raw[prefix_match.end() :]
+    sep_idx = after_prefix.find(" - ")
     if sep_idx < 0:
         return None
-    item = raw[:prefix_match.end() + sep_idx]
-    desc = after_prefix[sep_idx + 1:]
+    item = raw[: prefix_match.end() + sep_idx]
+    desc = after_prefix[sep_idx + 1 :]
     return item, desc
 
 
@@ -18,7 +18,7 @@ def _in_code_block(lines):
     inside = set()
     in_code = False
     for i, line in enumerate(lines):
-        if line.rstrip('\n').strip().startswith('```'):
+        if line.rstrip("\n").strip().startswith("```"):
             in_code = not in_code
             continue
         if in_code:
@@ -36,7 +36,7 @@ def _collect_groups(lines):
                 groups.append(current)
             current = []
             continue
-        raw = line.rstrip('\n')
+        raw = line.rstrip("\n")
         parsed = _parse_line(raw)
         if parsed:
             current.append((i, parsed[0], parsed[1]))
@@ -55,9 +55,7 @@ def check(lines):
         max_w = max(len(item) for _, item, _ in group)
         for i, item, _ in group:
             if len(item) < max_w:
-                errors.append(
-                    f'L{i + 1} list desc separator: col={len(item)} expected={max_w}'
-                )
+                errors.append(f"L{i + 1} list desc separator: col={len(item)} expected={max_w}")
     return errors
 
 
@@ -66,6 +64,6 @@ def fix(lines):
     for group in _collect_groups(lines):
         max_w = max(len(item) for _, item, _ in group)
         for i, item, desc in group:
-            padded = item + ' ' * (max_w - len(item))
-            result[i] = padded + ' ' + desc.lstrip(' ') + '\n'
+            padded = item + " " * (max_w - len(item))
+            result[i] = padded + " " + desc.lstrip(" ") + "\n"
     return result

@@ -34,7 +34,7 @@ def _check_widths(code_lines):
         for (first, last), lines_in_group in by_extent.items():
             lengths = {}
             for i, raw in lines_in_group:
-                after_box = raw[last + 1:]
+                after_box = raw[last + 1 :]
                 effective_len = last + 1 if after_box.strip() else len(raw)
                 lengths.setdefault(effective_len, []).append(i + 1)
 
@@ -69,7 +69,7 @@ def _fix_widths_in_block(code_indices, all_lines):
         for (first, last), lines_in_group in by_extent.items():
             lengths = {}
             for i, raw in lines_in_group:
-                after_box = raw[last + 1:]
+                after_box = raw[last + 1 :]
                 effective_len = last + 1 if after_box.strip() else len(raw)
                 lengths.setdefault(effective_len, []).append(i)
 
