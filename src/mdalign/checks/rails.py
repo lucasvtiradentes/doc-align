@@ -39,6 +39,20 @@ def _cluster_by_positions(items, threshold=CLUSTER_THRESHOLD):
     return [c for c in clusters if len(c) >= 2]
 
 
+def _has_adjacent_support(group, line_idx, col):
+    gi_map = {li: gi for gi, (li, _) in enumerate(group)}
+    gi = gi_map.get(line_idx)
+    if gi is None:
+        return False
+    for dgi in [-1, 1]:
+        adj = gi + dgi
+        if 0 <= adj < len(group):
+            _, raw = group[adj]
+            if col < len(raw) and raw[col] in BOX_CHARS:
+                return True
+    return False
+
+
 def _check_rails_by_index(group):
     errors = []
     flagged = set()
@@ -62,6 +76,8 @@ def _check_rails_by_index(group):
                 for col, line_indices in col_counts.items():
                     if col != most_common:
                         for li in line_indices:
+                            if _has_adjacent_support(group, li, col):
+                                continue
                             flagged.add((li, col))
                             errors.append(f"L{li + 1} box char at col {col}, expected col {most_common}")
     return errors, flagged
@@ -163,6 +179,69 @@ def _check_rails_by_column(group, already_flagged):
     return errors
 
 
+CONNECTOR_DRIFT = 5
+
+
+def _detect_outer_columns(group):
+    col_count = {}
+    for _, raw in group:
+        for j, c in enumerate(raw):
+            if c in BOX_CHARS:
+                col_count[j] = col_count.get(j, 0) + 1
+    threshold = len(group) * 0.8
+    return {col for col, count in col_count.items() if count >= threshold}
+
+
+def _local_support(group, col, gi, exclude_gi, window=2):
+    count = 0
+    for dgi in range(-window, window + 1):
+        check_gi = gi + dgi
+        if check_gi == gi or check_gi == exclude_gi:
+            continue
+        if 0 <= check_gi < len(group):
+            _, raw = group[check_gi]
+            if col < len(raw) and raw[col] in BOX_CHARS:
+                count += 1
+    return count
+
+
+def _find_connector_drifts(group, already_flagged=None):
+    outer = _detect_outer_columns(group)
+    inner = {}
+    for gi, (line_idx, raw) in enumerate(group):
+        chars = {j: c for j, c in enumerate(raw) if c in BOX_CHARS and j not in outer}
+        if chars:
+            inner[gi] = (line_idx, chars)
+
+    drifts = []
+    flagged = set() if already_flagged is None else set(already_flagged)
+    for gi_a in sorted(inner):
+        gi_b = gi_a + 1
+        if gi_b not in inner:
+            continue
+        li_a, chars_a = inner[gi_a]
+        li_b, chars_b = inner[gi_b]
+
+        for col_a in chars_a:
+            if col_a in chars_b:
+                continue
+            candidates = [(abs(col_b - col_a), col_b) for col_b in chars_b if 0 < abs(col_b - col_a) <= CONNECTOR_DRIFT]
+            if not candidates:
+                continue
+            _, col_b = min(candidates)
+            if col_b in chars_a:
+                continue
+            support_a = _local_support(group, col_a, gi_a, gi_b)
+            support_b = _local_support(group, col_b, gi_b, gi_a)
+            if support_a < support_b and (li_a, col_a) not in flagged:
+                drifts.append((li_a, col_a, col_b))
+                flagged.add((li_a, col_a))
+            elif support_b < support_a and (li_b, col_b) not in flagged:
+                drifts.append((li_b, col_b, col_a))
+                flagged.add((li_b, col_b))
+    return drifts
+
+
 def _check_rails(code_lines):
     errors = []
     if _is_tree_block(code_lines):
@@ -172,6 +251,8 @@ def _check_rails(code_lines):
         index_errors, already_flagged = _check_rails_by_index(group)
         errors.extend(index_errors)
         errors.extend(_check_rails_by_column(group, already_flagged))
+        for line_idx, col, expected in _find_connector_drifts(group, already_flagged):
+            errors.append(f"L{line_idx + 1} box char at col {col}, expected col {expected}")
 
     return errors
 
@@ -263,6 +344,14 @@ def _fix_rails_by_column(group, all_lines):
     _apply_corrections(group, all_lines, corrections)
 
 
+def _fix_connector_drifts(group, all_lines):
+    drifts = _find_connector_drifts(group)
+    if not drifts:
+        return
+    corrections = {(li, col): expected for li, col, expected in drifts}
+    _apply_corrections(group, all_lines, corrections)
+
+
 def _fix_rails_in_block(code_indices, all_lines):
     code_lines = [(i, all_lines[i].rstrip("\n")) for i in code_indices]
 
@@ -273,3 +362,5 @@ def _fix_rails_in_block(code_indices, all_lines):
         _fix_rails_by_index(group, all_lines)
         group = [(i, all_lines[i].rstrip("\n")) for i, _ in group]
         _fix_rails_by_column(group, all_lines)
+        group = [(i, all_lines[i].rstrip("\n")) for i, _ in group]
+        _fix_connector_drifts(group, all_lines)

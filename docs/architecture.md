@@ -28,7 +28,7 @@ Fixes run in a specific order. Tables, box widths, box padding, and horiz arrows
 │         ┌─────────────────────────────────────────┘          │
 │         │                                                    │
 │         └── horiz_arrows ──┐                                 │
-│                          │                                   │
+│                            │                                 │
 │         ┌──────────────────┘                                 │
 │         │                                                    │
 │         │   ┌──────────────────────────────────────────┐     │
