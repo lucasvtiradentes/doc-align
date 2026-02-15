@@ -27,7 +27,8 @@ md-align/
 │       ├── arrows.py        arrow-to-box alignment check/fix
 │       ├── pipes.py         pipe continuity check/fix
 │       ├── list_descs.py    list description separator alignment check/fix
-│       └── def_lists.py     definition list colon alignment check/fix
+│       ├── def_lists.py     definition list colon alignment check/fix
+│       └── wide_chars.py    wide char detection (check-only, no-op fix)
 ├── tests/
 │   ├── test_align.py        parametrized test suite
 │   └── fixtures/

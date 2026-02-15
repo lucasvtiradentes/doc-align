@@ -4,7 +4,7 @@ Design principles, conventions, and anti-patterns for mdalign.
 
 ## Design principles
 
-- Modular check/fix: each alignment concern lives in its own module (tables, box_widths, box_padding, box_spacing, horiz_arrows, rails, arrows, pipes, box_walls, list_descs, def_lists)
+- Modular check/fix: each alignment concern lives in its own module (tables, box_widths, box_padding, box_spacing, horiz_arrows, rails, arrows, pipes, box_walls, list_descs, def_lists, wide_chars)
 - Common interface: every module exports `check(lines) -> list[str]` and `fix(lines) -> list[str]`
 - Iterative convergence: fixes that interact (box_walls, rails, pipes) run in a loop up to 3 times, stopping early if output stabilizes
 - Idempotent output: applying fix to already-fixed content produces identical output

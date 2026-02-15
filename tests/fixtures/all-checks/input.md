@@ -281,3 +281,12 @@ config:
 - timeout: 30s
 - retries: 3
 - max-connections: 100
+
+## wide-chars - wide chars in diagram
+
+```
+┌──────────┐
+│ ▶ start  │
+│ ● status │
+└──────────┘
+```

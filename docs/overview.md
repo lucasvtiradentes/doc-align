@@ -1,6 +1,6 @@
 # Overview
 
-mdalign is a Python CLI tool that auto-fixes alignment issues in markdown documentation files containing box-drawing diagrams, tables, and list descriptions. It detects and corrects eleven categories of alignment problems.
+mdalign is a Python CLI tool that auto-fixes alignment issues in markdown documentation files containing box-drawing diagrams, tables, and list descriptions. It detects and corrects twelve categories of alignment problems.
 
 Repository: github.com/lucasvtiradentes/md-align
 
@@ -26,6 +26,7 @@ Repository: github.com/lucasvtiradentes/md-align
 | Box walls          | Matches nested box right walls to opening/closing borders  |
 | List descriptions  | Aligns separator dash in list item descriptions            |
 | Definition lists   | Aligns the colon separator in key: value list items        |
+| Wide chars         | Detects ambiguous/double-width Unicode chars in code blocks|
 
 ## Doc index
 

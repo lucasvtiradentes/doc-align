@@ -35,8 +35,9 @@ checks/ - per-module fixtures (1:1 with src/mdalign/checks/):
 | pipes        | 2     | pipe-drift, fp-aligned-pipes                                       |
 | list-descs   | 5     | basic, fp-single-item, fp-hyphenated, fp-non-consec, fp-code-block |
 | def-lists    | 6     | basic, fp-single-item, fp-url-in-value, + 3 more                   |
+| wide-chars   | 3     | wide-chars-in-diagram, fp-no-wide-chars, fp-safe-box-chars         |
 
-all-checks/ - single combined fixture covering all 11 checks.
+all-checks/ - single combined fixture covering all 12 checks.
 
 general/ - integration and edge case fixtures:
 
@@ -49,7 +50,7 @@ general/ - integration and edge case fixtures:
 | deploy       | 1     | Pipeline with merge diagram                               |
 | edge-cases   | 5     | Empty file, no code blocks, unclosed, unicode, empty block|
 
-Total: 64 fixture directories, 192 test cases (3 tests x 64 fixtures).
+Total: 67 fixture directories, 201 test cases (3 tests x 67 fixtures).
 
 ## Test flow
 

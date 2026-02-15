@@ -111,7 +111,7 @@ When docs are visually harmonious - with aligned columns, consistent box widths,
 - 3 modes        - check (default), auto-fix in place, or unified diff
 - flexible paths - files, directories, or glob patterns (e.g. `"docs/**/*.md"`)
 - CI-friendly    - exit code 0 when aligned, 1 when issues found
-- 11 alignment checks:
+- 12 alignment checks:
   - [Table columns](tests/fixtures/checks/tables)           - pads cells so every column matches the separator row width
   - [Box widths](tests/fixtures/checks/box-widths)          - ensures all lines in a box group have the same total length
   - [Box padding](tests/fixtures/checks/box-padding)        - normalizes left-padding of content lines inside boxes
@@ -123,6 +123,7 @@ When docs are visually harmonious - with aligned columns, consistent box widths,
   - [Box walls](tests/fixtures/checks/box-walls)            - verifies nested box right walls match their opening/closing borders
   - [List descriptions](tests/fixtures/checks/list-descs)   - aligns the separator dash in list item descriptions
   - [Definition lists](tests/fixtures/checks/def-lists)     - aligns the `:` separator in `key: value` list items
+  - [Wide chars](tests/fixtures/checks/wide-chars)          - detects ambiguous/double-width Unicode chars in code blocks
 
 ## Commands
 
@@ -138,7 +139,7 @@ mdalign --version                     # show version
 
 Paths can be files, directories, or glob patterns (e.g. `"docs/**/*.md"`).
 
-Check names for `--ignore`: tables, box-widths, box-padding, box-spacing, horiz-arrows, box-walls, rails, arrows, pipes, list-descs, def-lists.
+Check names for `--ignore`: tables, box-widths, box-padding, box-spacing, horiz-arrows, box-walls, rails, arrows, pipes, list-descs, def-lists, wide-chars.
 
 Exit codes: 0 = all aligned, 1 = issues found.
 

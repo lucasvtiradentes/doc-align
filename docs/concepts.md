@@ -105,6 +105,10 @@ Structures containing tree branch characters (`├──`, `└──`) without 
 
 Groups of consecutive list items matching the `- key: value` pattern form definition lists. The `:` separator is aligned across all items in the group by padding the key to match the longest key width. Single-item groups and items inside code blocks are skipped.
 
+## Wide characters
+
+Unicode characters with East Asian Width property W (Wide), F (Fullwidth), or A (Ambiguous) render as double-width in many monospace terminals and editors. When these appear inside code blocks, they break visual alignment of box-drawing diagrams. Common examples: ▶ ◆ ● ■ ★ and emoji. Box-drawing and arrow chars (─│┌┐└┘├┤┬┴┼→←↑↓) are excluded from detection since they are intentional diagram elements.
+
 ## Code blocks
 
 Most checks operate within fenced code blocks (delimited by triple backticks). The list_descs check operates on regular markdown lines outside code blocks, aligning separator dashes in grouped list items.

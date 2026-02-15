@@ -16,6 +16,7 @@ from mdalign.checks import (
     pipes,
     rails,
     tables,
+    wide_chars,
 )
 
 CHECK_MODULES = {
@@ -30,6 +31,7 @@ CHECK_MODULES = {
     "pipes": pipes,
     "list-descs": list_descs,
     "def-lists": def_lists,
+    "wide-chars": wide_chars,
 }
 
 ALL_CHECKS = list(CHECK_MODULES.values())
@@ -66,6 +68,7 @@ def run_fixes(lines, ignored=None):
     fixed = _apply("arrows", arrows.fix, fixed)
     fixed = _apply("list-descs", list_descs.fix, fixed)
     fixed = _apply("def-lists", def_lists.fix, fixed)
+    fixed = _apply("wide-chars", wide_chars.fix, fixed)
     return fixed
 
 
@@ -84,6 +87,7 @@ Checks and fixes:
   9. Box walls        - verifies nested box right walls match their opening/closing borders
  10. List descs       - aligns the separator dash in list item descriptions
  11. Def lists        - aligns the colon separator in key: value list items
+ 12. Wide chars       - detects ambiguous/double-width Unicode chars in code blocks
 
 Usage:
   mdalign <path>                        # check-only (default)
@@ -98,7 +102,7 @@ Paths can be files, directories, or glob patterns (e.g. "docs/**/*.md").
 
 Check names for --ignore:
   tables, box-widths, box-padding, box-spacing, horiz-arrows,
-  box-walls, rails, arrows, pipes, list-descs, def-lists
+  box-walls, rails, arrows, pipes, list-descs, def-lists, wide-chars
 
 Exit codes:
   0 - all docs aligned (or all issues auto-fixed)
