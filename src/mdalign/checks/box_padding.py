@@ -72,7 +72,12 @@ def _expected_padding(paddings):
     counts = Counter(paddings)
     max_count = max(counts.values())
     candidates = [p for p, c in counts.items() if c == max_count]
-    return max(candidates)
+    if len(candidates) == 1:
+        return candidates[0]
+    if 0 in candidates:
+        non_zero = [c for c in candidates if c > 0]
+        return min(non_zero)
+    return None
 
 
 def _has_layout_intent(pad_values):
@@ -95,7 +100,9 @@ def _check_padding(code_lines):
         if len(paddings) < 2 or _has_layout_intent([p for _, p in paddings]):
             continue
 
-        expected = _expected_padding(p for _, p in paddings)
+        expected = _expected_padding([p for _, p in paddings])
+        if expected is None:
+            continue
 
         for line_idx, pad in paddings:
             if pad != expected:
@@ -120,7 +127,9 @@ def _fix_padding_in_block(code_indices, all_lines):
         if len(paddings) < 2 or _has_layout_intent([p for _, _, p in paddings]):
             continue
 
-        expected = _expected_padding(p for _, _, p in paddings)
+        expected = _expected_padding([p for _, _, p in paddings])
+        if expected is None:
+            continue
 
         for ci, line_idx, pad in paddings:
             if pad == expected:
@@ -131,7 +140,7 @@ def _fix_padding_in_block(code_indices, all_lines):
             total_width = col_right - col_left - 1
             new_inner = " " * expected + content
             remaining = total_width - len(new_inner)
-            if remaining < 0:
+            if remaining < 1:
                 continue
             new_inner = new_inner + " " * remaining
             new_raw = raw[:col_left + 1] + new_inner + raw[col_right:]
