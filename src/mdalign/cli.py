@@ -6,31 +6,51 @@ from importlib.metadata import version as pkg_version
 
 from mdalign.checks import arrows, box_padding, box_walls, box_widths, def_lists, horiz_arrows, list_descs, pipes, rails, tables
 
-ALL_CHECKS = [tables, box_widths, box_padding, horiz_arrows, box_walls, rails, arrows, pipes, list_descs, def_lists]
+CHECK_MODULES = {
+    "tables": tables,
+    "box-widths": box_widths,
+    "box-padding": box_padding,
+    "horiz-arrows": horiz_arrows,
+    "box-walls": box_walls,
+    "rails": rails,
+    "arrows": arrows,
+    "pipes": pipes,
+    "list-descs": list_descs,
+    "def-lists": def_lists,
+}
+
+ALL_CHECKS = list(CHECK_MODULES.values())
 
 
-def run_checks(lines):
+def run_checks(lines, ignored=None):
+    ignored = ignored or set()
     errors = []
-    for mod in ALL_CHECKS:
-        errors.extend(mod.check(lines))
+    for name, mod in CHECK_MODULES.items():
+        if name not in ignored:
+            errors.extend(mod.check(lines))
     return errors
 
 
-def run_fixes(lines):
-    fixed = tables.fix(lines)
-    fixed = box_widths.fix(fixed)
-    fixed = box_padding.fix(fixed)
-    fixed = horiz_arrows.fix(fixed)
+def run_fixes(lines, ignored=None):
+    ignored = ignored or set()
+
+    def _apply(name, fn, data):
+        return fn(data) if name not in ignored else data
+
+    fixed = _apply("tables", tables.fix, lines)
+    fixed = _apply("box-widths", box_widths.fix, fixed)
+    fixed = _apply("box-padding", box_padding.fix, fixed)
+    fixed = _apply("horiz-arrows", horiz_arrows.fix, fixed)
     for _ in range(3):
         prev = list(fixed)
-        fixed = box_walls.fix(fixed)
-        fixed = rails.fix(fixed)
-        fixed = pipes.fix(fixed)
+        fixed = _apply("box-walls", box_walls.fix, fixed)
+        fixed = _apply("rails", rails.fix, fixed)
+        fixed = _apply("pipes", pipes.fix, fixed)
         if fixed == prev:
             break
-    fixed = arrows.fix(fixed)
-    fixed = list_descs.fix(fixed)
-    fixed = def_lists.fix(fixed)
+    fixed = _apply("arrows", arrows.fix, fixed)
+    fixed = _apply("list-descs", list_descs.fix, fixed)
+    fixed = _apply("def-lists", def_lists.fix, fixed)
     return fixed
 
 
@@ -50,13 +70,19 @@ Checks and fixes:
  10. Def lists        - aligns the colon separator in key: value list items
 
 Usage:
-  mdalign <path>               # check-only (default)
-  mdalign --fix <path>         # auto-fix files in place
-  mdalign --diff <path>        # show unified diff of changes
-  mdalign --help               # show this help
-  mdalign --version            # show version
+  mdalign <path>                        # check-only (default)
+  mdalign --check <path>                # explicit check-only
+  mdalign --fix <path>                  # auto-fix files in place
+  mdalign --diff <path>                 # show unified diff of changes
+  mdalign --ignore tables,pipes <path>  # skip specific checks
+  mdalign --help                        # show this help
+  mdalign --version                     # show version
 
 Paths can be files, directories, or glob patterns (e.g. "docs/**/*.md").
+
+Check names for --ignore:
+  tables, box-widths, box-padding, horiz-arrows, box-walls,
+  rails, arrows, pipes, list-descs, def-lists
 
 Exit codes:
   0 - all docs aligned (or all issues auto-fixed)
@@ -100,7 +126,26 @@ def main():
 
     fix_mode = "--fix" in sys.argv
     diff_mode = "--diff" in sys.argv
-    args = [a for a in sys.argv[1:] if not a.startswith("-")]
+
+    ignored = set()
+    argv = sys.argv[1:]
+    positional = []
+    i = 0
+    while i < len(argv):
+        if argv[i] == "--ignore" and i + 1 < len(argv):
+            names = [n.strip() for n in argv[i + 1].split(",") if n.strip()]
+            invalid = [n for n in names if n not in CHECK_MODULES]
+            if invalid:
+                print(f"error: unknown check(s): {', '.join(invalid)}")
+                print(f"valid checks: {', '.join(CHECK_MODULES)}")
+                sys.exit(1)
+            ignored.update(names)
+            i += 2
+            continue
+        if not argv[i].startswith("-"):
+            positional.append(argv[i])
+        i += 1
+    args = positional
 
     if len(args) == 0:
         print_help()
@@ -119,26 +164,26 @@ def main():
             lines = f.readlines()
 
         rel = os.path.relpath(fpath)
-        errs = run_checks(lines)
+        errs = run_checks(lines, ignored)
 
         if not errs:
             continue
 
         if diff_mode:
-            fixed_lines = run_fixes(lines)
+            fixed_lines = run_fixes(lines, ignored)
             diff = difflib.unified_diff(lines, fixed_lines, fromfile=rel, tofile=rel)
             diff_text = "".join(diff)
             if diff_text:
                 print(diff_text, end="" if diff_text.endswith("\n") else "\n")
                 has_diff = True
         elif fix_mode:
-            fixed_lines = run_fixes(lines)
+            fixed_lines = run_fixes(lines, ignored)
             with open(fpath, "w") as f:
                 f.writelines(fixed_lines)
 
             with open(fpath) as f:
                 recheck_lines = f.readlines()
-            remaining = run_checks(recheck_lines)
+            remaining = run_checks(recheck_lines, ignored)
 
             fixed_count = len(errs) - len(remaining)
             if fixed_count > 0:
