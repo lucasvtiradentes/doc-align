@@ -240,3 +240,35 @@ related sources:
 │  more text       │
 └──────────────────┘
 ```
+
+## box-padding - inconsistent left pad
+
+```
+┌──────────────┐
+│ validateAuth │
+│ compare with │
+└──────────────┘
+```
+
+## horiz-arrows - right gap
+
+```
+┌──────┐          ┌──────┐
+│ Src  │─────────>│ Dest │
+└──────┘          └──────┘
+```
+
+## horiz-arrows - left gap
+
+```
+┌──────┐          ┌──────┐
+│ Dest │<─────────│ Src  │
+└──────┘          └──────┘
+```
+
+## def-lists - basic
+
+config:
+- timeout:         30s
+- retries:         3
+- max-connections: 100

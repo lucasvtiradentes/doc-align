@@ -4,9 +4,9 @@ import os
 import sys
 from importlib.metadata import version as pkg_version
 
-from mdalign.checks import arrows, box_walls, box_widths, list_descs, pipes, rails, tables
+from mdalign.checks import arrows, box_padding, box_walls, box_widths, def_lists, horiz_arrows, list_descs, pipes, rails, tables
 
-ALL_CHECKS = [tables, box_widths, box_walls, rails, arrows, pipes, list_descs]
+ALL_CHECKS = [tables, box_widths, box_padding, horiz_arrows, box_walls, rails, arrows, pipes, list_descs, def_lists]
 
 
 def run_checks(lines):
@@ -19,6 +19,8 @@ def run_checks(lines):
 def run_fixes(lines):
     fixed = tables.fix(lines)
     fixed = box_widths.fix(fixed)
+    fixed = box_padding.fix(fixed)
+    fixed = horiz_arrows.fix(fixed)
     for _ in range(3):
         prev = list(fixed)
         fixed = box_walls.fix(fixed)
@@ -28,6 +30,7 @@ def run_fixes(lines):
             break
     fixed = arrows.fix(fixed)
     fixed = list_descs.fix(fixed)
+    fixed = def_lists.fix(fixed)
     return fixed
 
 
@@ -35,13 +38,16 @@ def print_help():
     print("""mdalign - Auto-fix alignment issues in markdown documentation files.
 
 Checks and fixes:
-  1. Tables          - pads cells so every column matches the separator row width
-  2. Box widths      - ensures all lines in a box group have the same total length
-  3. Rail alignment  - aligns vertically adjacent box chars to the same column
-  4. Arrow alignment - aligns standalone v/^ arrows with the nearest box char above/below
-  5. Pipe continuity - traces from T-junctions to detect drifted connector pipes
-  6. Box walls       - verifies nested box right walls match their opening/closing borders
-  7. List descs      - aligns the separator dash in list item descriptions
+  1. Tables           - pads cells so every column matches the separator row width
+  2. Box widths       - ensures all lines in a box group have the same total length
+  3. Box padding      - normalizes left-padding of content lines inside boxes
+  4. Horiz arrows     - closes gaps between arrow tips and box walls
+  5. Rail alignment   - aligns vertically adjacent box chars to the same column
+  6. Arrow alignment  - aligns standalone v/^ arrows with the nearest box char above/below
+  7. Pipe continuity  - traces from T-junctions to detect drifted connector pipes
+  8. Box walls        - verifies nested box right walls match their opening/closing borders
+  9. List descs       - aligns the separator dash in list item descriptions
+ 10. Def lists        - aligns the colon separator in key: value list items
 
 Usage:
   mdalign <path>               # check-only (default)
