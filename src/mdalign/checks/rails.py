@@ -111,14 +111,13 @@ def _identify_rails(group):
     return rails
 
 
-def _rail_errors(rail, already_flagged=None):
-    errors = []
+def _resolve_rail(rail):
     col_data = {}
     for line_idx, col, char in rail:
         col_data.setdefault(col, []).append((line_idx, char))
 
     if len(col_data) <= 1:
-        return errors
+        return None, col_data
 
     pipe_origins = {col: sum(1 for _, c in entries if c in ("┬", "┴")) for col, entries in col_data.items()}
     structural = {col: sum(1 for _, c in entries if c not in ("│", "┼")) for col, entries in col_data.items()}
@@ -135,6 +134,17 @@ def _rail_errors(rail, already_flagged=None):
         most_common = max(col_data.keys(), key=lambda k: len(col_data[k]))
     minority = len(rail) - len(col_data[most_common])
     if not has_structural and not has_pipe and minority * 3 > len(rail):
+        return None, col_data
+
+    return most_common, col_data
+
+
+def _rail_errors(rail, already_flagged=None):
+    errors = []
+    if not rail:
+        return errors
+    most_common, col_data = _resolve_rail(rail)
+    if most_common is None:
         return errors
 
     for col, entries in col_data.items():
@@ -169,26 +179,8 @@ def _check_rails(code_lines):
 def _build_corrections(rails):
     corrections = {}
     for rail in rails:
-        col_data = {}
-        for line_idx, col, char in rail:
-            col_data.setdefault(col, []).append((line_idx, char))
-        if len(col_data) <= 1:
-            continue
-        pipe_origins = {col: sum(1 for _, c in entries if c in ("┬", "┴")) for col, entries in col_data.items()}
-        structural = {col: sum(1 for _, c in entries if c not in ("│", "┼")) for col, entries in col_data.items()}
-        earliest = {col: min(li for li, _ in entries) for col, entries in col_data.items()}
-        has_pipe = any(v > 0 for v in pipe_origins.values())
-        has_structural = any(v > 0 for v in structural.values())
-        if has_pipe:
-            most_common = max(
-                col_data.keys(), key=lambda k: (pipe_origins[k], structural[k], len(col_data[k]), -earliest[k])
-            )
-        elif has_structural:
-            most_common = max(col_data.keys(), key=lambda k: (structural[k], len(col_data[k]), -earliest[k]))
-        else:
-            most_common = max(col_data.keys(), key=lambda k: len(col_data[k]))
-        minority = len(rail) - len(col_data[most_common])
-        if not has_structural and not has_pipe and minority * 3 > len(rail):
+        most_common, col_data = _resolve_rail(rail)
+        if most_common is None:
             continue
         for col, entries in col_data.items():
             if col != most_common:

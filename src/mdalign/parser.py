@@ -19,6 +19,18 @@ def iter_code_blocks(lines):
             code_lines.append((i, raw))
 
 
+def in_code_block(lines):
+    inside = set()
+    in_code = False
+    for i, line in enumerate(lines):
+        if line.rstrip("\n").strip().startswith("```"):
+            in_code = not in_code
+            continue
+        if in_code:
+            inside.add(i)
+    return inside
+
+
 def group_box_lines(code_lines):
     groups = []
     current = []

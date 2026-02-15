@@ -1,5 +1,7 @@
 import re
 
+from mdalign.parser import in_code_block
+
 
 def _parse_line(raw):
     prefix_match = re.match(r"^(\s*- )", raw)
@@ -14,20 +16,8 @@ def _parse_line(raw):
     return item, desc
 
 
-def _in_code_block(lines):
-    inside = set()
-    in_code = False
-    for i, line in enumerate(lines):
-        if line.rstrip("\n").strip().startswith("```"):
-            in_code = not in_code
-            continue
-        if in_code:
-            inside.add(i)
-    return inside
-
-
 def _collect_groups(lines):
-    code_lines = _in_code_block(lines)
+    code_lines = in_code_block(lines)
     groups = []
     current = []
     for i, line in enumerate(lines):

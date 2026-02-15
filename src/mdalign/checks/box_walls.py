@@ -4,10 +4,10 @@ from mdalign.utils import (
     BOX_WALL_DRIFT,
     _find_box_closer,
     _find_nearby_closer_start,
-    _find_nearby_wall,
+    _find_nearby_pipe,
     _fix_closer,
     _is_tree_block,
-    _shift_wall,
+    _shift_pipe,
 )
 
 
@@ -89,7 +89,7 @@ def _check_box_walls(code_lines):
                 m_line_idx, m_raw = code_lines[mi]
                 right_ok = expected_right < len(m_raw) and m_raw[expected_right] in BOX_CHARS
                 if not right_ok:
-                    found = _find_nearby_wall(m_raw, expected_right, BOX_WALL_DRIFT)
+                    found = _find_nearby_pipe(m_raw, expected_right, BOX_WALL_DRIFT)
                     if found is not None:
                         errors.append(
                             f"L{m_line_idx + 1} box wall │ at col {found}, "
@@ -98,7 +98,7 @@ def _check_box_walls(code_lines):
                         )
                 if col_left < len(m_raw):
                     if m_raw[col_left] not in BOX_CHARS:
-                        found = _find_nearby_wall(m_raw, col_left, BOX_WALL_DRIFT)
+                        found = _find_nearby_pipe(m_raw, col_left, BOX_WALL_DRIFT)
                         if found is not None:
                             errors.append(
                                 f"L{m_line_idx + 1} box wall │ at col {found}, "
@@ -164,6 +164,7 @@ def _fix_box_walls_in_block(code_indices, all_lines):
 
             if fuzzy_col_left is not None:
                 from mdalign.utils import _realign_box_chars
+
                 cur = all_lines[closing_line_idx].rstrip("\n")
                 actual_positions = [k for k, c in enumerate(cur) if c in BOX_CHARS]
                 expected_positions = []
@@ -200,18 +201,18 @@ def _fix_box_walls_in_block(code_indices, all_lines):
                 m_raw = all_lines[m_line_idx].rstrip("\n")
                 right_ok = expected_right < len(m_raw) and m_raw[expected_right] in BOX_CHARS
                 if not right_ok:
-                    found = _find_nearby_wall(m_raw, expected_right, BOX_WALL_DRIFT)
+                    found = _find_nearby_pipe(m_raw, expected_right, BOX_WALL_DRIFT)
                     if found is not None:
-                        fixed = _shift_wall(m_raw, found, expected_right)
+                        fixed = _shift_pipe(m_raw, found, expected_right)
                         if fixed != m_raw:
                             all_lines[m_line_idx] = fixed + "\n"
                             m_raw = fixed
                             changed = True
                 if col_left < len(m_raw):
                     if m_raw[col_left] not in BOX_CHARS:
-                        found = _find_nearby_wall(m_raw, col_left, BOX_WALL_DRIFT)
+                        found = _find_nearby_pipe(m_raw, col_left, BOX_WALL_DRIFT)
                         if found is not None:
-                            fixed = _shift_wall(m_raw, found, col_left)
+                            fixed = _shift_pipe(m_raw, found, col_left)
                             if fixed != m_raw:
                                 all_lines[m_line_idx] = fixed + "\n"
                                 changed = True

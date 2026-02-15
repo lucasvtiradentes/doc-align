@@ -1,7 +1,9 @@
 import re
 
+from mdalign.parser import in_code_block
+
 _DEF_PATTERN = re.compile(r"^(\s*- \S+?): ")
-_URL_COLON = re.compile(r"https?:")
+_URL_COLON = re.compile(r"https?:|ftp:|file:")
 
 
 def _parse_line(raw):
@@ -11,24 +13,12 @@ def _parse_line(raw):
     if not m:
         return None
     key_part = m.group(0).rstrip(" ")
-    value = raw[m.end():]
+    value = raw[m.end() :]
     return key_part, value
 
 
-def _in_code_block(lines):
-    inside = set()
-    in_code = False
-    for i, line in enumerate(lines):
-        if line.rstrip("\n").strip().startswith("```"):
-            in_code = not in_code
-            continue
-        if in_code:
-            inside.add(i)
-    return inside
-
-
 def _collect_groups(lines):
-    code_lines = _in_code_block(lines)
+    code_lines = in_code_block(lines)
     groups = []
     current = []
     for i, line in enumerate(lines):

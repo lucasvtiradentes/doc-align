@@ -1,5 +1,5 @@
 from mdalign.parser import iter_code_blocks
-from mdalign.utils import BOX_CHARS, PIPE_DRIFT_MAX, _find_nearby_isolated_pipe, _is_tree_block, _shift_pipe
+from mdalign.utils import BOX_CHARS, PIPE_DRIFT_MAX, _find_nearby_pipe, _is_tree_block, _shift_pipe
 
 
 def check(lines):
@@ -41,7 +41,7 @@ def _trace_pipe_check(code_lines, start_idx, col, direction, flagged, errors):
             if sraw[col] == "│":
                 continue
             break
-        found = _find_nearby_isolated_pipe(sraw, col, PIPE_DRIFT_MAX)
+        found = _find_nearby_pipe(sraw, col, PIPE_DRIFT_MAX)
         if found is not None:
             if (line_idx, found) not in flagged:
                 flagged.add((line_idx, found))
@@ -70,7 +70,7 @@ def _fix_pipes_in_block(code_indices, all_lines):
     for line_idx, line_corrections in by_line.items():
         raw = all_lines[line_idx].rstrip("\n")
         for current_col, expected_col in sorted(line_corrections, key=lambda x: -x[0]):
-            raw = _shift_pipe(raw, current_col, expected_col)
+            raw = _shift_pipe(raw, current_col, expected_col, strip_trailing=True)
         all_lines[line_idx] = raw + "\n"
 
 
@@ -82,7 +82,7 @@ def _trace_pipe_fix(code_lines, start_idx, col, direction, corrections):
             if sraw[col] == "│":
                 continue
             break
-        found = _find_nearby_isolated_pipe(sraw, col, PIPE_DRIFT_MAX)
+        found = _find_nearby_pipe(sraw, col, PIPE_DRIFT_MAX)
         if found is not None:
             corrections[(line_idx, found)] = col
         else:

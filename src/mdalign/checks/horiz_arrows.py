@@ -98,20 +98,25 @@ def _fix_horiz_arrows_in_block(code_indices, all_lines):
                 continue
             gap = wall_col - tip_col - 1
             if gap > 0:
-                new_raw = new_raw[:m.start()] + "─" * (m.end() - m.start() - 1 + gap) + ">" + new_raw[wall_col:]
+                new_raw = new_raw[: m.start()] + "─" * (m.end() - m.start() - 1 + gap) + ">" + new_raw[wall_col:]
 
-        for m in list(_LEFT_ARROW.finditer(new_raw)):
-            tip_col = m.start()
-            wall_col = _left_wall_col(new_raw, tip_col)
-            if wall_col is None or not _is_box_wall_col(code_lines, wall_col):
-                continue
-            src_col = m.end()
-            if src_col >= len(new_raw) or new_raw[src_col] != "│" or not _is_box_wall_col(code_lines, src_col):
-                continue
-            gap = tip_col - wall_col - 1
-            if gap > 0:
-                dash_len = m.end() - m.start() - 1 + gap
-                new_raw = new_raw[:wall_col + 1] + "<" + "─" * dash_len + new_raw[m.end():]
+        changed = True
+        while changed:
+            changed = False
+            for m in _LEFT_ARROW.finditer(new_raw):
+                tip_col = m.start()
+                wall_col = _left_wall_col(new_raw, tip_col)
+                if wall_col is None or not _is_box_wall_col(code_lines, wall_col):
+                    continue
+                src_col = m.end()
+                if src_col >= len(new_raw) or new_raw[src_col] != "│" or not _is_box_wall_col(code_lines, src_col):
+                    continue
+                gap = tip_col - wall_col - 1
+                if gap > 0:
+                    dash_len = m.end() - m.start() - 1 + gap
+                    new_raw = new_raw[: wall_col + 1] + "<" + "─" * dash_len + new_raw[m.end() :]
+                    changed = True
+                    break
 
         if new_raw != raw:
             all_lines[line_idx] = new_raw + "\n"

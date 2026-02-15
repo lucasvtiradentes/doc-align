@@ -28,7 +28,7 @@ def _find_box_closer(raw, open_char, close_char, start_col):
     return None
 
 
-def _find_nearby_wall(raw, expected_col, max_drift):
+def _find_nearby_pipe(raw, expected_col, max_drift):
     for dc in range(1, max_drift + 1):
         for sign in [-1, 1]:
             nc = expected_col + sign * dc
@@ -40,19 +40,7 @@ def _find_nearby_wall(raw, expected_col, max_drift):
     return None
 
 
-def _find_nearby_isolated_pipe(raw, expected_col, max_drift):
-    for dc in range(1, max_drift + 1):
-        for sign in [-1, 1]:
-            nc = expected_col + sign * dc
-            if 0 <= nc < len(raw) and raw[nc] == "│":
-                left_ok = nc == 0 or raw[nc - 1] == " "
-                right_ok = nc == len(raw) - 1 or raw[nc + 1] == " "
-                if left_ok and right_ok:
-                    return nc
-    return None
-
-
-def _shift_wall(raw, current_col, expected_col):
+def _shift_pipe(raw, current_col, expected_col, strip_trailing=False):
     if current_col >= len(raw) or raw[current_col] != "│":
         return raw
     delta = expected_col - current_col
@@ -67,7 +55,7 @@ def _shift_wall(raw, current_col, expected_col):
                 break
         if spaces_after >= delta:
             return raw[:current_col] + " " * delta + "│" + raw[current_col + 1 + delta :]
-        elif current_col >= len(raw) - 1:
+        elif not strip_trailing and current_col >= len(raw) - 1:
             return raw[:current_col] + " " * delta + "│"
     else:
         remove = abs(delta)
@@ -78,36 +66,8 @@ def _shift_wall(raw, current_col, expected_col):
             else:
                 break
         if spaces_before >= remove:
-            return raw[: current_col - remove] + "│" + " " * remove + raw[current_col + 1 :]
-    return raw
-
-
-def _shift_pipe(raw, current_col, expected_col):
-    if current_col >= len(raw) or raw[current_col] != "│":
-        return raw
-    delta = expected_col - current_col
-    if delta == 0:
-        return raw
-    if delta > 0:
-        spaces_after = 0
-        for k in range(current_col + 1, len(raw)):
-            if raw[k] == " ":
-                spaces_after += 1
-            else:
-                break
-        if spaces_after >= delta:
-            return raw[:current_col] + " " * delta + "│" + raw[current_col + 1 + delta :]
-    else:
-        remove = abs(delta)
-        spaces_before = 0
-        for k in range(current_col - 1, -1, -1):
-            if raw[k] == " ":
-                spaces_before += 1
-            else:
-                break
-        if spaces_before >= remove:
             result = raw[: current_col - remove] + "│" + " " * remove + raw[current_col + 1 :]
-            return result.rstrip(" ")
+            return result.rstrip(" ") if strip_trailing else result
     return raw
 
 
@@ -199,6 +159,34 @@ def _realign_box_chars(raw, actual, expected):
             result.append(chars[i])
 
     return "".join(result)
+
+
+def _find_boxes(code_lines):
+    boxes = []
+    for idx, (line_idx, raw) in enumerate(code_lines):
+        j = 0
+        while j < len(raw):
+            if raw[j] != "┌":
+                j += 1
+                continue
+            col_left = j
+            col_right = _find_box_closer(raw, "┌", "┐", j)
+            if col_right is None or col_right - col_left < 4:
+                j += 1
+                continue
+            closing_idx = None
+            for si in range(idx + 1, len(code_lines)):
+                _, sraw = code_lines[si]
+                if col_left < len(sraw) and sraw[col_left] == "└":
+                    cr = _find_box_closer(sraw, "└", "┘", col_left)
+                    if cr is not None:
+                        closing_idx = si
+                        break
+            if closing_idx is not None and closing_idx - idx >= 2:
+                content_indices = list(range(idx + 1, closing_idx))
+                boxes.append((col_left, col_right, idx, closing_idx, content_indices))
+            j = col_right + 1
+    return boxes
 
 
 BOX_WALL_CLOSER_DRIFT = 2

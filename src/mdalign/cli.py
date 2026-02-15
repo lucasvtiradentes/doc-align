@@ -4,7 +4,19 @@ import os
 import sys
 from importlib.metadata import version as pkg_version
 
-from mdalign.checks import arrows, box_padding, box_spacing, box_walls, box_widths, def_lists, horiz_arrows, list_descs, pipes, rails, tables
+from mdalign.checks import (
+    arrows,
+    box_padding,
+    box_spacing,
+    box_walls,
+    box_widths,
+    def_lists,
+    horiz_arrows,
+    list_descs,
+    pipes,
+    rails,
+    tables,
+)
 
 CHECK_MODULES = {
     "tables": tables,
