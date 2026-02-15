@@ -32,8 +32,6 @@ def test_check_detects_issues(fixture_dir):
 def test_fix_produces_expected(fixture_dir):
     input_md = (fixture_dir / "input.md").read_text()
     expected_md = (fixture_dir / "expected.md").read_text()
-    if _is_check_only(fixture_dir) and input_md != expected_md:
-        pytest.skip("check-only module, fix is no-op")
     fixed = run_fixes(input_md.splitlines(keepends=True))
     assert "".join(fixed) == expected_md
 
