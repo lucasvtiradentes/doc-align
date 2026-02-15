@@ -1,82 +1,167 @@
 # mdalign
 
-Auto-fix alignment issues in markdown documentation files containing box-drawing diagrams, tables, and list descriptions.
+CLI utility that auto-fixes alignment issues in markdown documentation files - tables, box-drawing diagrams, list descriptions, and more.
 
-## What it fixes
+## Motivation
 
-1. Tables          - pads cells so every column matches the separator row width
-2. Box widths      - ensures all lines in a box group have the same total length
-3. Rail alignment  - aligns vertically adjacent box chars to the same column
-4. Arrow alignment - aligns standalone `v`/`^` arrows with the nearest box char above/below
-5. Pipe continuity - traces from T-junctions to detect drifted connector pipes
-6. Box walls       - verifies nested box right walls match their opening/closing borders
-7. List descs      - aligns the separator dash in list item descriptions
+In the era of agentic engineering, documentation is the most critical artifact in any codebase. It guides both humans and AI agents. 
+When docs are visually harmonious - with aligned columns, consistent box widths, and straight connector lines - they become easier to read, parse, and maintain by everyone.
 
-## Install
+## Features
+
+- 3 modes        - check (default), auto-fix in place, or unified diff
+- flexible paths - files, directories, or glob patterns (e.g. `"docs/**/*.md"`)
+- CI-friendly    - exit code 0 when aligned, 1 when issues found
+- 7 alignment checks:
+  - [Table columns](tests/fixtures/checks/tables)         - pads cells so every column matches the separator row width
+  - [Box widths](tests/fixtures/checks/box-widths)         - ensures all lines in a box group have the same total length
+  - [Rail alignment](tests/fixtures/checks/rails)          - aligns vertically adjacent box chars to the same column
+  - [Arrow alignment](tests/fixtures/checks/arrows)        - aligns standalone `v`/`^` arrows with the nearest box char above/below
+  - [Pipe continuity](tests/fixtures/checks/pipes)         - traces from T-junctions to detect drifted connector pipes
+  - [Box walls](tests/fixtures/checks/box-walls)           - verifies nested box right walls match their opening/closing borders
+  - [List descriptions](tests/fixtures/checks/list-descs)  - aligns the separator dash in list item descriptions
+
+## Example
+
+```
+┌────────────────────────┐       ┌────────────────────────┐
+│  ┌────┐   ┌────┐      │        │  ┌────┐   ┌────┐       │
+│  │ A  │   │ B  │      │        │  │ A  │   │ B  │       │
+│  └──┬─┘   └──┬─┘      │        │  └──┬─┘   └──┬─┘       │
+│     │         │        │       │     │        │         │
+│     └────┬───┘         │  -->  │     └────┬───┘         │
+│           v            │       │          v             │
+│     ┌──────┐           │       │     ┌──────┐           │
+│     │  C   │           │       │     │  C   │           │
+│     └──────┘           │       │     └──────┘           │
+└────────────────────────┘       └────────────────────────┘
+```
+
+<details>
+<summary>More examples</summary>
+
+### [Tables](tests/fixtures/checks/tables)
+
+```
+| Service        | Usage                         |             | Service        | Usage                         |
+|----------------|-------------------------------|             |----------------|-------------------------------|
+| Linear API     | Status transitions, comments|        -->    | Linear API     | Status transitions, comments  |
+| GitHub API| Repo clone, PR creation       |                  | GitHub API     | Repo clone, PR creation       |
+```
+
+### [List descriptions](tests/fixtures/checks/list-descs)
+
+```
+- docs/repo.md - mirrors CI steps                       - docs/repo.md                    - mirrors CI steps
+- docs/guides/testing-strategy.md - test suite  -->     - docs/guides/testing-strategy.md - test suite
+```
+
+### [Box widths](tests/fixtures/checks/box-widths)
+
+```
+┌──────────────┐       ┌──────────────┐
+│  Linear UI  │   -->  │  Linear UI   │
+│  (userscript)│       │  (userscript)│
+└──────────────┘       └──────────────┘
+```
+
+### [Rail alignment](tests/fixtures/checks/rails)
+
+```
+┌──────┬──────┐       ┌──────┬──────┐
+│      │      │       │      │      │
+│       │     │  -->  │      │      │
+│      │      │       │      │      │
+└──────┴──────┘       └──────┴──────┘
+```
+
+### [Arrow alignment](tests/fixtures/checks/arrows)
+
+```
+┌──────┐                     ┌──────┐
+│ step │                     │ step │
+└──┬───┘                     └──┬───┘
+   │           -->              │
+     v                          v
+┌──────┐                     ┌──────┐
+│ next │                     │ next │
+└──────┘                     └──────┘
+```
+
+### [Pipe continuity](tests/fixtures/checks/pipes)
+
+```
+┌──────┬──────┐              ┌──────┬──────┐
+│ src  │ dest │              │ src  │ dest │
+└──────┴──┬───┘              └──────┴──┬───┘
+          │        -->                 │
+            │                          │
+          │                            │
+┌─────────┴───┐              ┌─────────┴───┐
+│   output    │              │   output    │
+└─────────────┘              └─────────────┘
+```
+
+### [Box walls](tests/fixtures/checks/box-walls)
+
+```
+┌──────────────────┐       ┌──────────────────┐
+│  content here    │       │  content here    │
+│  more text       │  -->  │  more text       │
+└────────────────┘         └──────────────────┘
+```
+
+</details>
+
+## Usage
 
 ```bash
-# globally available as a CLI tool
+mdalign <path>         # check-only (default) - detect issues, no writes
+mdalign --fix <path>   # auto-fix files in place
+mdalign --diff <path>  # show unified diff of what would change
+```
+
+### Install
+
+```bash
 pipx install mdalign
 ```
 
-or
+or inside a virtual environment:
 
 ```bash
-# inside a virtual environment
 pip install mdalign
 ```
 
-For local development:
+### Update
+
+```bash
+pipx upgrade mdalign
+```
+
+or:
+
+```bash
+pip install --upgrade mdalign
+```
+
+### Uninstall
+
+```bash
+pipx uninstall mdalign
+```
+
+or:
+
+```bash
+pip uninstall mdalign
+```
+
+## Development
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
-```
-
-## Usage
-
-```bash
-# check-only (default) - detect issues, no writes
-mdalign <path>
-
-# auto-fix files in place
-mdalign --fix <path>
-
-# show unified diff of what would change
-mdalign --diff <path>
-```
-
-Paths can be files, directories, or glob patterns (e.g. `"docs/**/*.md"`).
-
-## Exit codes
-
-- 0 - all docs aligned (or all issues auto-fixed)
-- 1 - errors found (check mode), unfixable issues remain (fix mode), or diff non-empty (diff mode)
-
-## Tests
-
-```bash
 pytest -v
-pytest -k "tables"       # run only table fixtures
-pytest -k "box-walls"    # run only box-walls fixtures
 ```
-
-## Project structure
-
-```
-src/
-├── cli.py          main entrypoint, arg parsing, orchestration
-├── parser.py       shared helpers: iter_code_blocks, group_box_lines
-├── utils.py        constants and shared utility functions
-└── checks/
-    ├── tables.py       table column alignment
-    ├── box_widths.py   box line width normalization
-    ├── rails.py        vertical box char alignment
-    ├── arrows.py       arrow-to-box alignment
-    ├── pipes.py        pipe continuity from T-junctions
-    ├── box_walls.py    nested box wall alignment
-    └── list_descs.py   list description separator alignment
-```
-
-Each module exports `check(lines) -> list[str]` and `fix(lines) -> list[str]`.
