@@ -1,4 +1,4 @@
-# mdalign
+# Overview
 
 CLI utility that auto-fixes alignment issues in markdown documentation files - tables, box-drawing diagrams, list descriptions, and more.
 
@@ -36,7 +36,7 @@ When docs are visually harmonious - with aligned columns, consistent box widths,
 │     └────┬───┘         │  -->  │     └────┬───┘         │
 │           v            │       │          v             │
 │     ┌──────┐           │       │     ┌──────┐           │
-│     │  C   │           │       │     │  C   │           │
+ │     │  C   │           │      │     │  C   │           │
 │     └──────┘           │       │     └──────┘           │
 └────────────────────────┘       └────────────────────────┘
 ```
@@ -138,36 +138,21 @@ mdalign --diff <path>  # show unified diff of what would change
 
 ```bash
 pipx install mdalign
-```
-
-or inside a virtual environment:
-
-```bash
-pip install mdalign
+# pip install mdalign
 ```
 
 ### Update
 
 ```bash
 pipx upgrade mdalign
-```
-
-or:
-
-```bash
-pip install --upgrade mdalign
+# pip install --upgrade mdalign
 ```
 
 ### Uninstall
 
 ```bash
 pipx uninstall mdalign
-```
-
-or:
-
-```bash
-pip uninstall mdalign
+# pip uninstall mdalign
 ```
 
 ## Development
