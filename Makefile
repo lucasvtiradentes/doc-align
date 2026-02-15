@@ -9,6 +9,9 @@ check:
 test:
 	.venv/bin/pytest -v
 
+test-all-checks:
+	.venv/bin/pytest -v -k "all-checks"
+
 practical-test:
 	.venv/bin/mdalign $(ARGS) docs/
 
