@@ -25,6 +25,23 @@ def fix(lines):
     return result
 
 
+def _has_independent_box_after(raw, col):
+    after = raw[col + 1 :] if col + 1 < len(raw) else ""
+    if not after:
+        return False
+    has_box_structure = "┌" in after or "└" in after
+    if not has_box_structure:
+        return False
+    pipe_indices = [i for i, c in enumerate(after) if c == "│"]
+    if len(pipe_indices) < 2:
+        return False
+    first_pipe = pipe_indices[0]
+    second_pipe = pipe_indices[1]
+    between_pipes = after[first_pipe + 1 : second_pipe]
+    has_large_space_gap = "    " in between_pipes
+    return has_large_space_gap
+
+
 def _check_box_walls(code_lines):
     errors = []
     if _is_tree_block(code_lines):
@@ -196,13 +213,17 @@ def _fix_box_walls_in_block(code_indices, all_lines):
                     all_lines[closing_line_idx] = fixed + "\n"
                     changed = True
 
+            has_adjacent_box_on_line = "┌" in raw[col_right_open + 1 :]
+
             for mi in range(idx + 1, closing_idx):
                 m_line_idx = code_lines[mi][0]
                 m_raw = all_lines[m_line_idx].rstrip("\n")
+                has_box_after_right = _has_independent_box_after(m_raw, expected_right)
+                has_box_after_left = _has_independent_box_after(m_raw, col_left)
                 right_ok = expected_right < len(m_raw) and m_raw[expected_right] in BOX_CHARS
                 if not right_ok:
                     found = _find_nearby_pipe(m_raw, expected_right, BOX_WALL_DRIFT)
-                    if found is not None:
+                    if found is not None and not has_box_after_right and not has_adjacent_box_on_line:
                         fixed = _shift_pipe(m_raw, found, expected_right)
                         if fixed != m_raw:
                             all_lines[m_line_idx] = fixed + "\n"
@@ -211,7 +232,7 @@ def _fix_box_walls_in_block(code_indices, all_lines):
                 if col_left < len(m_raw):
                     if m_raw[col_left] not in BOX_CHARS:
                         found = _find_nearby_pipe(m_raw, col_left, BOX_WALL_DRIFT)
-                        if found is not None:
+                        if found is not None and not has_box_after_left and not has_adjacent_box_on_line:
                             fixed = _shift_pipe(m_raw, found, col_left)
                             if fixed != m_raw:
                                 all_lines[m_line_idx] = fixed + "\n"

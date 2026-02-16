@@ -74,8 +74,31 @@ def _find_connectors_in_range(raw, col_left, col_right):
 
 
 def _collect_box_insertions(code_lines):
+    all_boxes = list(_find_boxes(code_lines))
+
+    def get_parent_info(col_left, col_right):
+        for other_left, other_right, opening_ci, *_ in all_boxes:
+            if other_left < col_left and col_right < other_right:
+                return (other_left, other_right, opening_ci)
+        return None
+
+    def has_sibling_after(col_right, opener_raw):
+        after = opener_raw[col_right + 1:]
+        if "┌" not in after:
+            return False
+        corner_pos = after.index("┌")
+        between = after[:corner_pos]
+        return "    " in between
+
     box_insertions = []
-    for col_left, col_right, opening_ci, closing_ci, content_indices in _find_boxes(code_lines):
+    for col_left, col_right, opening_ci, closing_ci, content_indices in all_boxes:
+        parent_info = get_parent_info(col_left, col_right)
+        if parent_info is not None:
+            _, parent_right, parent_opening_ci = parent_info
+            parent_opener_raw = code_lines[parent_opening_ci][1]
+            if has_sibling_after(parent_right, parent_opener_raw):
+                continue
+
         min_rpad = None
         min_lpad = None
         for ci in content_indices:

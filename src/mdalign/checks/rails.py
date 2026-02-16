@@ -340,12 +340,32 @@ def _build_corrections(rails, group=None):
     return corrections
 
 
+def _has_independent_adjacent_box(raw, col):
+    after = raw[col + 1 :] if col + 1 < len(raw) else ""
+    if not after:
+        return False
+    has_box_structure = "┌" in after or "└" in after
+    if not has_box_structure:
+        return False
+    pipe_indices = [i for i, c in enumerate(after) if c == "│"]
+    if len(pipe_indices) < 2:
+        return False
+    first_pipe = pipe_indices[0]
+    second_pipe = pipe_indices[1]
+    between_pipes = after[first_pipe + 1 : second_pipe]
+    has_large_space_gap = "    " in between_pipes
+    return has_large_space_gap
+
+
 def _apply_corrections(group, all_lines, corrections):
     failed = {}
     for i, raw in group:
         actual = [j for j, c in enumerate(raw) if c in BOX_CHARS]
         expected = [corrections.get((i, j), j) for j in actual]
         if actual == expected:
+            continue
+        needs_change = [(a, e) for a, e in zip(actual, expected) if a != e]
+        if needs_change and any(_has_independent_adjacent_box(raw, a) for a, _ in needs_change):
             continue
         fixed = _realign_box_chars(raw, actual, expected)
         if fixed != raw:
