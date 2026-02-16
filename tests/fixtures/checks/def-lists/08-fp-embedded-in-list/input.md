@@ -1,0 +1,5 @@
+- Role-playing agent design (role, goal, backstory)
+- Memory system: short-term, long-term, entity, external
+- Knowledge system: RAG with ChromaDB/Qdrant for PDF, CSV, JSON, text
+- Task guardrails: callable or LLM-based output validation with retry
+- Conditional tasks and async task execution

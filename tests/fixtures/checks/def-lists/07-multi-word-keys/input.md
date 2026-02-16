@@ -1,0 +1,4 @@
+- Default URL: `http://127.0.0.1:18789/`
+- Features: chat interface, config editor, session management, exec approvals, channel status
+- Build: `pnpm ui:build`
+- Access via Tailscale: configure `gateway.tailscale.mode: "serve"`
