@@ -10,9 +10,9 @@ _MAX_KEY_WORDS = 4
 def _find_colon_sep(text):
     in_backtick = False
     for i, c in enumerate(text):
-        if c == '`':
+        if c == "`":
             in_backtick = not in_backtick
-        elif c == ':' and not in_backtick and i + 1 < len(text) and text[i + 1] == ' ':
+        elif c == ":" and not in_backtick and i + 1 < len(text) and text[i + 1] == " ":
             return i
     return -1
 
@@ -21,17 +21,17 @@ def _parse_line(raw):
     m = _PREFIX.match(raw)
     if not m:
         return None
-    after_prefix = raw[m.end():]
+    after_prefix = raw[m.end() :]
     colon_idx = _find_colon_sep(after_prefix)
     if colon_idx < 0:
         return None
     key_text = after_prefix[:colon_idx]
     if len(key_text.split()) > _MAX_KEY_WORDS:
         return None
-    key_part = raw[:m.end() + colon_idx + 1]
+    key_part = raw[: m.end() + colon_idx + 1]
     if _URL_COLON.search(key_part):
         return None
-    value = after_prefix[colon_idx + 2:]
+    value = after_prefix[colon_idx + 2 :]
     return key_part, value
 
 

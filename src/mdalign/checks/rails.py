@@ -152,7 +152,9 @@ def _resolve_rail(rail, group=None):
                         count += 1
         anchored[col] = count
 
-    latest_anchored = {col: max((li for li, c in entries if c in ("┬", "┴")), default=-1) for col, entries in col_data.items()}
+    latest_anchored = {
+        col: max((li for li, c in entries if c in ("┬", "┴")), default=-1) for col, entries in col_data.items()
+    }
 
     pipe_origins = {col: sum(1 for _, c in entries if c in ("┬", "┴")) for col, entries in col_data.items()}
     structural = {col: sum(1 for _, c in entries if c not in ("│", "┼")) for col, entries in col_data.items()}
@@ -163,7 +165,15 @@ def _resolve_rail(rail, group=None):
 
     if has_anchored:
         most_common = max(
-            col_data.keys(), key=lambda k: (anchored[k], latest_anchored[k], pipe_origins[k], structural[k], len(col_data[k]), -earliest[k])
+            col_data.keys(),
+            key=lambda k: (
+                anchored[k],
+                latest_anchored[k],
+                pipe_origins[k],
+                structural[k],
+                len(col_data[k]),
+                -earliest[k],
+            ),
         )
     elif has_pipe:
         most_common = max(

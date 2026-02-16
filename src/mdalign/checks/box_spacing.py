@@ -142,7 +142,7 @@ def _is_complex_multi_column(box_insertions):
         return False
     line_sets = [set(ins[3]) for ins in left_insertions]
     for i, lines_a in enumerate(line_sets):
-        for lines_b in line_sets[i + 1:]:
+        for lines_b in line_sets[i + 1 :]:
             if not lines_a & lines_b:
                 return True
     return False
