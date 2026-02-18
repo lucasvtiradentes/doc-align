@@ -7,11 +7,11 @@
 │                    callable-ci.yml                       │
 │                 (reusable workflow)                      │
 │                                                          │
-│  ┌──────────────┐  ┌─────────────────┐  ┌─────────────┐  │
-│  │  check       │  │ practical-test  │  │    test     │  │
-│  │  ruff check  │  │ docalign --check │  │  pytest -v  │  │
-│  │  ruff format │  │ docs/           │  │ (3.9, 3.12) │  │
-│  └──────────────┘  └─────────────────┘  └─────────────┘  │
+│  ┌──────────────┐  ┌──────────────────┐  ┌─────────────┐ │
+│  │  check       │  │ practical-test   │  │    test     │ │
+│  │  ruff check  │  │ docalign --check │  │   pytest -v │ │
+│  │  ruff format │  │ docs/            │  │ (3.9, 3.12) │ │
+│  └──────────────┘  └──────────────────┘  └─────────────┘ │
 └──────────────────────────────────────────────────────────┘
               ^                      ^
               │                      │
@@ -30,7 +30,7 @@ Reusable workflow triggered via `workflow_call`. Contains three parallel jobs:
 | Job            | Steps                                                                |
 |----------------|----------------------------------------------------------------------|
 | check          | checkout, setup Python 3.12, install, ruff check, ruff format --check|
-| practical-test | checkout, setup Python 3.12, install, docalign --check docs/          |
+| practical-test | checkout, setup Python 3.12, install, docalign --check docs/         |
 | test           | checkout, setup Python 3.9 + 3.12 (matrix), install, pytest -v       |
 
 ### prs.yml

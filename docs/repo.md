@@ -85,7 +85,7 @@ related docs:
 - docs/guides/testing-strategy.md - how fixtures and tests work
 
 related sources:
-- pyproject.toml - package metadata, tool configs
-- Makefile       - task runner targets
+- pyproject.toml  - package metadata, tool configs
+- Makefile        - task runner targets
 - src/docalign/   - source modules
-- tests/         - test suite and fixtures
+- tests/          - test suite and fixtures

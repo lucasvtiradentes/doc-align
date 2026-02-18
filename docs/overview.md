@@ -51,7 +51,7 @@ Repository: github.com/lucasvtiradentes/md-align
 ---
 
 related sources:
-- README.md      - project description and usage instructions
-- pyproject.toml - package metadata, dependencies, scripts
+- README.md       - project description and usage instructions
+- pyproject.toml  - package metadata, dependencies, scripts
 - src/docalign/   - all source modules
-- tests/         - test suite and fixture data
+- tests/          - test suite and fixture data
