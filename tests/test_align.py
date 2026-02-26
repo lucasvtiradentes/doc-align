@@ -18,8 +18,8 @@ def _is_check_only(fixture_dir):
 
 @pytest.mark.parametrize("fixture_dir", collect_fixtures())
 def test_check_detects_issues(fixture_dir):
-    input_md = (fixture_dir / "input.md").read_text()
-    expected_md = (fixture_dir / "expected.md").read_text()
+    input_md = (fixture_dir / "input.md").read_text(encoding="utf-8")
+    expected_md = (fixture_dir / "expected.md").read_text(encoding="utf-8")
     errors = run_checks(input_md.splitlines(keepends=True))
     if input_md == expected_md:
         if not _is_check_only(fixture_dir):
@@ -30,15 +30,15 @@ def test_check_detects_issues(fixture_dir):
 
 @pytest.mark.parametrize("fixture_dir", collect_fixtures())
 def test_fix_produces_expected(fixture_dir):
-    input_md = (fixture_dir / "input.md").read_text()
-    expected_md = (fixture_dir / "expected.md").read_text()
+    input_md = (fixture_dir / "input.md").read_text(encoding="utf-8")
+    expected_md = (fixture_dir / "expected.md").read_text(encoding="utf-8")
     fixed = run_fixes(input_md.splitlines(keepends=True))
     assert "".join(fixed) == expected_md
 
 
 @pytest.mark.parametrize("fixture_dir", collect_fixtures())
 def test_fix_is_idempotent(fixture_dir):
-    expected_md = (fixture_dir / "expected.md").read_text()
+    expected_md = (fixture_dir / "expected.md").read_text(encoding="utf-8")
     lines = expected_md.splitlines(keepends=True)
     fixed = run_fixes(lines)
     assert "".join(fixed) == expected_md

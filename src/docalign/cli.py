@@ -212,7 +212,7 @@ def main():
     has_diff = False
 
     for fpath in sorted(files):
-        with open(fpath) as f:
+        with open(fpath, encoding="utf-8") as f:
             lines = f.readlines()
 
         rel = os.path.relpath(fpath)
@@ -230,10 +230,10 @@ def main():
                 has_diff = True
         elif fix_mode:
             fixed_lines = run_fixes(lines, ignored)
-            with open(fpath, "w") as f:
+            with open(fpath, "w", encoding="utf-8") as f:
                 f.writelines(fixed_lines)
 
-            with open(fpath) as f:
+            with open(fpath, encoding="utf-8") as f:
                 recheck_lines = f.readlines()
             remaining = run_checks(recheck_lines, ignored)
 
