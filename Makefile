@@ -27,8 +27,8 @@ changelog-draft:
 	.venv/bin/towncrier build --draft --version $(shell python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
 
 build:
-	.venv/bin/pip install hatch
-	.venv/bin/hatch build
+	.venv/bin/pip install build
+	.venv/bin/python -m build
 
 clean:
 	rm -rf .venv dist build *.egg-info src/*.egg-info

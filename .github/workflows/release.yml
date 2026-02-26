@@ -30,7 +30,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - run: pip install bump2version towncrier hatch
+      - run: pip install bump2version towncrier build
 
       - name: Configure git
         run: |
@@ -56,7 +56,7 @@ jobs:
           git push origin main --tags
 
       - name: Build
-        run: hatch build
+        run: python -m build
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
