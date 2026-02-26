@@ -125,7 +125,7 @@ Normalizes left-padding of content lines inside boxes.
 
 ```
 ┌──────────────┐       ┌──────────────┐
-│ validateAuth │       │ validateAuth │
+│validateAuth  │       │ validateAuth │
 │ compare with │  -->  │ compare with │
 └──────────────┘       └──────────────┘
 ```
@@ -135,7 +135,7 @@ Closes gaps between arrow tips and box walls.
 
 ```
 ┌──────┐          ┌──────┐       ┌──────┐          ┌──────┐
-│ Src  │─────────>│ Dest │  -->  │ Src  │─────────>│ Dest │
+│ Src  │────────> │ Dest │  -->  │ Src  │─────────>│ Dest │
 └──────┘          └──────┘       └──────┘          └──────┘
 ```
 
