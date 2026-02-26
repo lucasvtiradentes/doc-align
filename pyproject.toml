@@ -8,6 +8,29 @@ version = "0.1.1"
 description = "Auto-fix alignment in markdown docs"
 readme = "README.md"
 requires-python = ">=3.9"
+license = "MIT"
+authors = [{ name = "lucasvtiradentes" }]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Documentation",
+    "Topic :: Text Processing :: Markup :: Markdown",
+]
+
+[project.urls]
+Homepage = "https://github.com/lucasvtiradentes/doc-align"
+Repository = "https://github.com/lucasvtiradentes/doc-align"
+Issues = "https://github.com/lucasvtiradentes/doc-align/issues"
 
 [project.optional-dependencies]
 dev = ["pytest>=7", "ruff>=0.9", "towncrier>=23", "bump2version>=1", "pre-commit>=3"]
@@ -17,6 +40,15 @@ docalign = "docalign.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/docalign"]
+
+[tool.hatch.build.targets.wheel.sources]
+"src" = ""
+
+[tool.hatch.build]
+include = [
+  "src/docalign/**/*.py",
+  "src/docalign/py.typed",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

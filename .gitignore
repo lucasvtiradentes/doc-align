@@ -6,3 +6,4 @@ build/
 .venv/
 .ignore
 _context
+**/.DS_Store
